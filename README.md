@@ -47,16 +47,6 @@ El repositorio expone una librería reusable en `src/distance_routing/`, una CLI
 
 ## Instalación
 
-Con `pip`:
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -e .
-```
-
-Con `uv`:
-
 ```bash
 uv sync
 ```
@@ -66,13 +56,13 @@ uv sync
 La interfaz principal es:
 
 ```bash
-python -m distance_routing <subcomando> [opciones]
+uv run distance-routing <subcomando> [opciones]
 ```
 
-Si el paquete está instalado, también puedes usar:
+Alternativamente, sin usar el entry point:
 
 ```bash
-distance-routing <subcomando> [opciones]
+uv run python -m distance_routing <subcomando> [opciones]
 ```
 
 ### Subcomandos
@@ -93,12 +83,12 @@ distance-routing <subcomando> [opciones]
 ### Ejemplos
 
 ```bash
-python -m distance_routing open-route
-python -m distance_routing closed-route --start 0
-python -m distance_routing warehouse-median
-python -m distance_routing warehouse-fixed --fixed-y -40
-python -m distance_routing warehouse-mst --output output/red_mst.txt
-python -m distance_routing warehouse-monotone --fixed-y -40
+uv run distance-routing open-route
+uv run distance-routing closed-route --start 0
+uv run distance-routing warehouse-median
+uv run distance-routing warehouse-fixed --fixed-y -40
+uv run distance-routing warehouse-mst --output output/red_mst.txt
+uv run distance-routing warehouse-monotone --fixed-y -40
 ```
 
 ## Formato de entrada
@@ -145,13 +135,13 @@ Esto permite usar la lógica desde otros scripts sin depender de la CLI.
 Ejecutar tests:
 
 ```bash
-python -m unittest discover -s tests -v
+uv run python -m unittest discover -s tests -v
 ```
 
 Ver ayuda de la CLI:
 
 ```bash
-python -m distance_routing --help
+uv run distance-routing --help
 ```
 
 ## Compatibilidad
