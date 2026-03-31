@@ -1,7 +1,9 @@
 [project]
 name = "distance-routing"
 version = "0.1.0"
-description = "Add your description here"
+description = "Optimizaciones de rutas y bodegas con distancia Manhattan en 3D"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "networkx>=3.6.1",
+]

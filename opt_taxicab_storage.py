@@ -1,6 +1,7 @@
 """Calcula la bodega óptima libre en 3D usando el centro taxicab."""
 
 import statistics
+from pathlib import Path
 
 
 def read_points_txt(path):
@@ -44,7 +45,9 @@ def taxicab_center(points):
 
 
 if __name__ == "__main__":
-    points = read_points_txt("puntos.txt")
+    base_dir = Path(__file__).resolve().parent
+    input_file = base_dir / "input" / "puntos.txt"
+    points = read_points_txt(input_file)
     center, total, distances = taxicab_center(points)
 
     print("Bodega óptima:", center)

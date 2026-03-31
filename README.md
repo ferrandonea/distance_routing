@@ -9,15 +9,30 @@ El proyecto trabaja sobre un conjunto de puntos en un archivo de texto y calcula
 - una bodega óptima libre en 3D minimizando suma de distancias;
 - una bodega óptima con `y` fija;
 - una bodega con `y` fija minimizando el costo de una red compartida modelada como MST.
+- una red dirigida hacia una bodega con restricción monotónica sobre el eje `y`.
 
 ## Requisitos
 
 - Python 3.12 o superior
-- No hay dependencias externas
+- `networkx` para `opt_taxicab_high_gravity.py`
+
+Instalación opcional del entorno:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install networkx
+```
+
+## Estructura de carpetas
+
+- `input/`: archivos de entrada.
+- `output/`: archivos generados por los scripts.
+- la raíz contiene los scripts y el `README`.
 
 ## Formato de entrada
 
-El archivo `puntos.txt` debe contener una terna `x y z` por línea:
+El archivo [input/puntos.txt](/Users/franciscoerrandonea/code/distance_routing/input/puntos.txt) debe contener una terna `x y z` por línea:
 
 ```txt
 -287 2 -736
@@ -45,8 +60,8 @@ Usa programación dinámica por subconjuntos, por lo que sirve bien para instanc
 Salida:
 
 - imprime resultados en consola;
-- genera `ruta_abierta.txt`;
-- genera `ruta_cerrada.txt`.
+- genera `output/ruta_abierta.txt`;
+- genera `output/ruta_cerrada.txt`.
 
 Ejecutar:
 
@@ -60,6 +75,8 @@ Calcula la bodega óptima libre en 3D para minimizar la suma de distancias Manha
 
 La solución usa la mediana por coordenada.
 
+Lee desde `input/puntos.txt` y sólo muestra resultados por consola.
+
 Ejecutar:
 
 ```bash
@@ -71,6 +88,8 @@ python opt_taxicab_storage.py
 Calcula la bodega óptima restringida al plano `y = -40` minimizando la suma de distancias Manhattan.
 
 La solución usa la mediana en `x` y `z`, manteniendo `y` fija.
+
+Lee desde `input/puntos.txt` y sólo muestra resultados por consola.
 
 Ejecutar:
 
@@ -91,7 +110,7 @@ El script además elimina puntos duplicados antes de optimizar.
 Salida:
 
 - imprime la solución en consola;
-- genera `solucion_bodega_mst.txt`.
+- genera `output/solucion_bodega_mst.txt`.
 
 Ejecutar:
 
@@ -99,22 +118,47 @@ Ejecutar:
 python opt_taxicab_w_cost.py
 ```
 
+### `opt_taxicab_high_gravity.py`
+
+Busca una bodega en el plano `y = -40` minimizando una red compartida dirigida hacia la bodega. La red sólo permite transiciones donde el nodo padre tiene `y` menor o igual que el nodo hijo.
+
+Internamente construye una arborescencia mínima usando `networkx`.
+
+Salida:
+
+- imprime la solución en consola;
+- genera `output/solucion_bodega_monotona_y.txt`.
+
+Ejecutar:
+
+```bash
+python opt_taxicab_high_gravity.py
+```
+
 ## Archivos relevantes
 
-- `puntos.txt`: entrada principal.
-- `ruta_abierta.txt`: salida de la ruta abierta.
-- `ruta_cerrada.txt`: salida de la ruta cerrada.
-- `solucion_bodega_mst.txt`: salida de la optimización con costo de red.
+- `input/puntos.txt`: entrada principal.
+- `output/ruta_abierta.txt`: salida de la ruta abierta.
+- `output/ruta_cerrada.txt`: salida de la ruta cerrada.
+- `output/solucion_bodega_mst.txt`: salida de la optimización con costo de red.
+- `output/solucion_bodega_monotona_y.txt`: salida de la optimización dirigida.
 
 ## Estructura del proyecto
 
 ```txt
 .
+├── input/
+│   └── puntos.txt
 ├── min_distance.py
 ├── opt_taxicab_high_fixed.py
+├── opt_taxicab_high_gravity.py
 ├── opt_taxicab_storage.py
 ├── opt_taxicab_w_cost.py
-├── puntos.txt
+├── output/
+│   ├── ruta_abierta.txt
+│   ├── ruta_cerrada.txt
+│   ├── solucion_bodega_monotona_y.txt
+│   └── solucion_bodega_mst.txt
 └── README.md
 ```
 
@@ -123,3 +167,4 @@ python opt_taxicab_w_cost.py
 - `min_distance.py` resuelve el problema de forma exacta y su costo computacional crece rápido con el número de puntos.
 - `opt_taxicab_storage.py` y `opt_taxicab_high_fixed.py` son métodos cerrados y muy baratos computacionalmente.
 - `opt_taxicab_w_cost.py` mezcla búsqueda de candidatos con evaluación exacta por MST; puede crecer si el espacio de búsqueda es grande.
+- `opt_taxicab_high_gravity.py` requiere una solución factible con restricción monotónica en `y`; si existe un punto por debajo de la bodega fija, puede no haber solución.

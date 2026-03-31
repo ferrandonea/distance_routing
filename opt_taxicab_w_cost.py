@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import List, Tuple, Optional
 import math
 
@@ -192,6 +193,8 @@ def save_solution(
     """Persistе la solución en un archivo de texto legible."""
     num_original_points = len(points)
     all_nodes = points + [warehouse]
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
 
     with open(path, "w", encoding="utf-8") as f:
         f.write("SOLUCIÓN\n")
@@ -232,8 +235,9 @@ def deduplicate_points(points, tol=1e-9):
 
 def main() -> None:
     """Ejecuta el flujo completo de búsqueda de bodega y exporta la solución."""
-    input_file = "puntos.txt"
-    output_file = "solucion_bodega_mst.txt"
+    base_dir = Path(__file__).resolve().parent
+    input_file = base_dir / "input" / "puntos.txt"
+    output_file = base_dir / "output" / "solucion_bodega_mst.txt"
     fixed_y = -40.0
 
     points = read_points_txt(input_file)

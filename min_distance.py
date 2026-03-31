@@ -1,6 +1,7 @@
 """Calcula rutas mínimas abiertas y cerradas con distancia Manhattan en 3D."""
 
 from itertools import combinations
+from pathlib import Path
 
 
 def read_points_txt(path):
@@ -150,6 +151,7 @@ def tsp_manhattan_cycle(points, start=0):
 
 def save_route(path_out, points, route, total_cost):
     """Guarda una ruta calculada en un archivo de texto legible."""
+    path_out.parent.mkdir(parents=True, exist_ok=True)
     with open(path_out, "w", encoding="utf-8") as f:
         f.write(f"Distancia total: {total_cost}\n")
         f.write("Orden de visita:\n")
@@ -159,7 +161,10 @@ def save_route(path_out, points, route, total_cost):
 
 
 if __name__ == "__main__":
-    input_file = "puntos.txt"
+    base_dir = Path(__file__).resolve().parent
+    input_file = base_dir / "input" / "puntos.txt"
+    open_output_file = base_dir / "output" / "ruta_abierta.txt"
+    closed_output_file = base_dir / "output" / "ruta_cerrada.txt"
 
     points = read_points_txt(input_file)
 
@@ -176,7 +181,7 @@ if __name__ == "__main__":
         for i in open_route:
             print(points[i])
 
-        save_route("ruta_abierta.txt", points, open_route, open_cost)
+        save_route(open_output_file, points, open_route, open_cost)
 
         cycle_cost, cycle_route = tsp_manhattan_cycle(points, start=0)
         print("\nRuta cerrada mínima")
@@ -186,4 +191,4 @@ if __name__ == "__main__":
         for i in cycle_route:
             print(points[i])
 
-        save_route("ruta_cerrada.txt", points, cycle_route, cycle_cost)
+        save_route(closed_output_file, points, cycle_route, cycle_cost)

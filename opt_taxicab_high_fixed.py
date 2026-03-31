@@ -1,6 +1,7 @@
 """Busca una bodega óptima con coordenada `y` fija bajo distancia Manhattan."""
 
 import statistics
+from pathlib import Path
 
 
 def read_points_txt(path):
@@ -43,7 +44,9 @@ def constrained_center(points, fixed_y=-40):
 
 
 if __name__ == "__main__":
-    points = read_points_txt("puntos.txt")
+    base_dir = Path(__file__).resolve().parent
+    input_file = base_dir / "input" / "puntos.txt"
+    points = read_points_txt(input_file)
 
     center, total, distances = constrained_center(points, fixed_y=-40)
 
