@@ -24,6 +24,21 @@ from .warehouse import (
 )
 
 
+def _print_route_summary(title: str, total_cost: float, path: list[int]) -> None:
+    """Imprime un resumen compacto de una ruta exacta."""
+
+    print(title)
+    print("Distancia total:", total_cost)
+    print("Orden índices:", path)
+
+
+def _print_location_summary(title: str, location: tuple[float, float, float], total: float) -> None:
+    """Imprime un resumen compacto de una ubicación óptima."""
+
+    print(title, location)
+    print("Suma total mínima:", total)
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Construye el parser de la CLI con todos los subcomandos disponibles."""
 
@@ -91,6 +106,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     monotone_parser.add_argument("--fixed-y", type=float, default=-40.0)
 
+    run_all_parser = subparsers.add_parser(
+        "run-all",
+        help="Ejecuta todos los algoritmos con una sola invocación",
+    )
+    run_all_parser.add_argument("--input", type=Path, default=default_input)
+    run_all_parser.add_argument("--start", type=int, default=0)
+    run_all_parser.add_argument("--fixed-y", type=float, default=-40.0)
+    run_all_parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=default_output_path("placeholder.txt").parent,
+    )
+
     return parser
 
 
@@ -103,25 +131,20 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "open-route":
         result = exact_open_route(points)
         output_path = write_route_report(args.output, points, result)
-        print("Ruta abierta mínima")
-        print("Distancia total:", result.total_cost)
-        print("Orden índices:", result.path)
+        _print_route_summary("Ruta abierta mínima", result.total_cost, result.path)
         print(f"Resultado guardado en: {output_path}")
         return 0
 
     if args.command == "closed-route":
         result = exact_closed_route(points, start=args.start)
         output_path = write_route_report(args.output, points, result)
-        print("Ruta cerrada mínima")
-        print("Distancia total:", result.total_cost)
-        print("Orden índices:", result.path)
+        _print_route_summary("Ruta cerrada mínima", result.total_cost, result.path)
         print(f"Resultado guardado en: {output_path}")
         return 0
 
     if args.command == "warehouse-median":
         result = taxicab_median(points)
-        print("Bodega óptima:", result.location)
-        print("Suma total mínima:", result.total_distance)
+        _print_location_summary("Bodega óptima:", result.location, result.total_distance)
         if args.output is not None:
             output_path = write_location_report(args.output, points, result, "BODEGA ÓPTIMA")
             print(f"Resultado guardado en: {output_path}")
@@ -129,8 +152,11 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "warehouse-fixed":
         result = taxicab_median_fixed_y(points, fixed_y=args.fixed_y)
-        print("Bodega óptima con y fijo:", result.location)
-        print("Suma total mínima:", result.total_distance)
+        _print_location_summary(
+            "Bodega óptima con y fijo:",
+            result.location,
+            result.total_distance,
+        )
         if args.output is not None:
             output_path = write_location_report(
                 args.output,
@@ -157,6 +183,55 @@ def main(argv: list[str] | None = None) -> int:
         print("Bodega óptima:", result.location)
         print("Costo total de la red compartida:", result.arborescence.total_cost)
         print(f"Resultado guardado en: {output_path}")
+        return 0
+
+    if args.command == "run-all":
+        output_dir = args.output_dir
+        unique_points = deduplicate_points(points)
+
+        open_result = exact_open_route(points)
+        open_output = write_route_report(output_dir / "ruta_abierta.txt", points, open_result)
+        _print_route_summary("Ruta abierta mínima", open_result.total_cost, open_result.path)
+        print(f"Resultado guardado en: {open_output}")
+        print()
+
+        closed_result = exact_closed_route(points, start=args.start)
+        closed_output = write_route_report(output_dir / "ruta_cerrada.txt", points, closed_result)
+        _print_route_summary("Ruta cerrada mínima", closed_result.total_cost, closed_result.path)
+        print(f"Resultado guardado en: {closed_output}")
+        print()
+
+        median_result = taxicab_median(points)
+        _print_location_summary("Bodega óptima:", median_result.location, median_result.total_distance)
+        print()
+
+        fixed_result = taxicab_median_fixed_y(points, fixed_y=args.fixed_y)
+        _print_location_summary(
+            "Bodega óptima con y fijo:",
+            fixed_result.location,
+            fixed_result.total_distance,
+        )
+        print()
+
+        mst_result = best_warehouse_mst(unique_points, fixed_y=args.fixed_y)
+        mst_output = write_mst_report(output_dir / "solucion_bodega_mst.txt", unique_points, mst_result)
+        print("Bodega óptima MST:", mst_result.location)
+        print("Costo total de la red compartida:", mst_result.mst.total_cost)
+        print(f"Resultado guardado en: {mst_output}")
+        print()
+
+        monotone_result = best_warehouse_monotone(unique_points, fixed_y=args.fixed_y)
+        monotone_output = write_arborescence_report(
+            output_dir / "solucion_bodega_monotona_y.txt",
+            unique_points,
+            monotone_result,
+        )
+        print("Bodega óptima monotónica:", monotone_result.location)
+        print(
+            "Costo total de la red compartida:",
+            monotone_result.arborescence.total_cost,
+        )
+        print(f"Resultado guardado en: {monotone_output}")
         return 0
 
     raise RuntimeError(f"Subcomando no soportado: {args.command}")

@@ -61,6 +61,34 @@ class CliTests(unittest.TestCase):
             self.assertEqual(exit_code, 0)
             self.assertIn("(1.0, -1.0, 1.0)", stdout.getvalue())
 
+    def test_run_all_generates_all_batch_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_path = Path(tmp_dir)
+            input_path = tmp_path / "puntos.txt"
+            output_dir = tmp_path / "out"
+            input_path.write_text("0 1 0\n2 2 0\n", encoding="utf-8")
+
+            stdout = StringIO()
+            with redirect_stdout(stdout):
+                exit_code = cli.main(
+                    [
+                        "run-all",
+                        "--input",
+                        str(input_path),
+                        "--fixed-y",
+                        "0",
+                        "--output-dir",
+                        str(output_dir),
+                    ]
+                )
+
+            self.assertEqual(exit_code, 0)
+            self.assertIn("Ruta abierta mínima", stdout.getvalue())
+            self.assertTrue((output_dir / "ruta_abierta.txt").exists())
+            self.assertTrue((output_dir / "ruta_cerrada.txt").exists())
+            self.assertTrue((output_dir / "solucion_bodega_mst.txt").exists())
+            self.assertTrue((output_dir / "solucion_bodega_monotona_y.txt").exists())
+
 
 if __name__ == "__main__":
     unittest.main()

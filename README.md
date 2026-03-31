@@ -67,6 +67,7 @@ uv run python -m distance_routing <subcomando> [opciones]
 
 ### Subcomandos
 
+- `run-all`: ejecuta todos los algoritmos en una sola corrida.
 - `open-route`: ruta abierta mínima.
 - `closed-route`: ruta cerrada mínima.
 - `warehouse-median`: bodega óptima libre en 3D.
@@ -79,10 +80,12 @@ uv run python -m distance_routing <subcomando> [opciones]
 - `--input`: archivo de entrada. Default `input/puntos.txt`.
 - `--output`: archivo de salida cuando aplica.
 - `--fixed-y`: default `-40.0` para algoritmos restringidos a un plano.
+- `--output-dir`: carpeta de salida para `run-all`. Default `output/`.
 
 ### Ejemplos
 
 ```bash
+uv run distance-routing run-all --fixed-y -40
 uv run distance-routing open-route
 uv run distance-routing closed-route --start 0
 uv run distance-routing warehouse-median
@@ -110,6 +113,7 @@ Reglas:
 
 ## Salidas por defecto
 
+- `run-all` escribe `output/ruta_abierta.txt`, `output/ruta_cerrada.txt`, `output/solucion_bodega_mst.txt` y `output/solucion_bodega_monotona_y.txt`
 - `open-route` escribe `output/ruta_abierta.txt`
 - `closed-route` escribe `output/ruta_cerrada.txt`
 - `warehouse-mst` escribe `output/solucion_bodega_mst.txt`
