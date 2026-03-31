@@ -1,147 +1,17 @@
-# Distance Routing
+# distance-routing
 
-Scripts en Python para resolver variantes simples de optimización geométrica en 3D usando distancia Manhattan (taxicab).
+Herramientas en Python para optimización de rutas y ubicación de bodegas en 3D usando distancia Manhattan.
 
-El proyecto trabaja sobre un conjunto de puntos en un archivo de texto y calcula:
+El repositorio expone una librería reusable en `src/distance_routing/`, una CLI única para ejecutar cada algoritmo y wrappers delgados para mantener compatibilidad con los scripts históricos.
 
-- una ruta mínima abierta que visita todos los puntos una vez;
-- una ruta mínima cerrada que vuelve al origen;
-- una bodega óptima libre en 3D minimizando suma de distancias;
-- una bodega óptima con `y` fija;
-- una bodega con `y` fija minimizando el costo de una red compartida modelada como MST.
-- una red dirigida hacia una bodega con restricción monotónica sobre el eje `y`.
+## Capacidades
 
-## Requisitos
-
-- Python 3.12 o superior
-- `networkx` para `opt_taxicab_high_gravity.py`
-
-Instalación opcional del entorno:
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install networkx
-```
-
-## Estructura de carpetas
-
-- `input/`: archivos de entrada.
-- `output/`: archivos generados por los scripts.
-- la raíz contiene los scripts y el `README`.
-
-## Formato de entrada
-
-El archivo [input/puntos.txt](/Users/franciscoerrandonea/code/distance_routing/input/puntos.txt) debe contener una terna `x y z` por línea:
-
-```txt
--287 2 -736
--286 -4 -729
--271 2 -714
-```
-
-Notas:
-
-- Se permiten enteros o decimales.
-- Las líneas vacías se ignoran.
-- Cada línea debe tener exactamente 3 valores.
-
-## Scripts
-
-### `min_distance.py`
-
-Calcula rutas mínimas exactas con distancia Manhattan:
-
-- ruta abierta: visita todos los puntos sin volver al inicio;
-- ruta cerrada: parte en el punto `0`, visita todos los puntos y vuelve al inicio.
-
-Usa programación dinámica por subconjuntos, por lo que sirve bien para instancias pequeñas.
-
-Salida:
-
-- imprime resultados en consola;
-- genera `output/ruta_abierta.txt`;
-- genera `output/ruta_cerrada.txt`.
-
-Ejecutar:
-
-```bash
-python min_distance.py
-```
-
-### `opt_taxicab_storage.py`
-
-Calcula la bodega óptima libre en 3D para minimizar la suma de distancias Manhattan desde todos los puntos hacia una sola ubicación.
-
-La solución usa la mediana por coordenada.
-
-Lee desde `input/puntos.txt` y sólo muestra resultados por consola.
-
-Ejecutar:
-
-```bash
-python opt_taxicab_storage.py
-```
-
-### `opt_taxicab_high_fixed.py`
-
-Calcula la bodega óptima restringida al plano `y = -40` minimizando la suma de distancias Manhattan.
-
-La solución usa la mediana en `x` y `z`, manteniendo `y` fija.
-
-Lee desde `input/puntos.txt` y sólo muestra resultados por consola.
-
-Ejecutar:
-
-```bash
-python opt_taxicab_high_fixed.py
-```
-
-### `opt_taxicab_w_cost.py`
-
-Busca una bodega en el plano `y = -40` minimizando el costo total de una red compartida. Para cada candidato:
-
-- agrega la bodega como un nodo más;
-- construye un árbol recubridor mínimo (MST) con distancia Manhattan;
-- compara el costo total de la red.
-
-El script además elimina puntos duplicados antes de optimizar.
-
-Salida:
-
-- imprime la solución en consola;
-- genera `output/solucion_bodega_mst.txt`.
-
-Ejecutar:
-
-```bash
-python opt_taxicab_w_cost.py
-```
-
-### `opt_taxicab_high_gravity.py`
-
-Busca una bodega en el plano `y = -40` minimizando una red compartida dirigida hacia la bodega. La red sólo permite transiciones donde el nodo padre tiene `y` menor o igual que el nodo hijo.
-
-Internamente construye una arborescencia mínima usando `networkx`.
-
-Salida:
-
-- imprime la solución en consola;
-- genera `output/solucion_bodega_monotona_y.txt`.
-
-Ejecutar:
-
-```bash
-python opt_taxicab_high_gravity.py
-```
-
-## Archivos relevantes
-
-- `input/puntos.txt`: entrada principal.
-- `output/ruta_abierta.txt`: salida de la ruta abierta.
-- `output/ruta_cerrada.txt`: salida de la ruta cerrada.
-- `output/solucion_bodega_mst.txt`: salida de la optimización con costo de red.
-- `output/solucion_bodega_monotona_y.txt`: salida de la optimización dirigida.
+- ruta abierta mínima que visita todos los puntos una vez;
+- ruta cerrada mínima que vuelve al origen;
+- bodega óptima libre en 3D por mediana taxicab;
+- bodega óptima sobre un plano `y` fijo;
+- bodega óptima minimizando una red compartida vía MST;
+- bodega óptima con red dirigida monotónica sobre el eje `y`.
 
 ## Estructura del proyecto
 
@@ -149,22 +19,149 @@ python opt_taxicab_high_gravity.py
 .
 ├── input/
 │   └── puntos.txt
+├── output/
+├── src/
+│   └── distance_routing/
+│       ├── __main__.py
+│       ├── candidates.py
+│       ├── cli.py
+│       ├── geometry.py
+│       ├── io_utils.py
+│       ├── routing.py
+│       ├── types.py
+│       └── warehouse.py
+├── tests/
 ├── min_distance.py
 ├── opt_taxicab_high_fixed.py
 ├── opt_taxicab_high_gravity.py
 ├── opt_taxicab_storage.py
 ├── opt_taxicab_w_cost.py
-├── output/
-│   ├── ruta_abierta.txt
-│   ├── ruta_cerrada.txt
-│   ├── solucion_bodega_monotona_y.txt
-│   └── solucion_bodega_mst.txt
+├── pyproject.toml
 └── README.md
 ```
 
-## Observaciones
+## Requisitos
 
-- `min_distance.py` resuelve el problema de forma exacta y su costo computacional crece rápido con el número de puntos.
-- `opt_taxicab_storage.py` y `opt_taxicab_high_fixed.py` son métodos cerrados y muy baratos computacionalmente.
-- `opt_taxicab_w_cost.py` mezcla búsqueda de candidatos con evaluación exacta por MST; puede crecer si el espacio de búsqueda es grande.
-- `opt_taxicab_high_gravity.py` requiere una solución factible con restricción monotónica en `y`; si existe un punto por debajo de la bodega fija, puede no haber solución.
+- Python 3.12+
+- `networkx` para la variante de arborescencia monotónica
+
+## Instalación
+
+Con `pip`:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e .
+```
+
+Con `uv`:
+
+```bash
+uv sync
+```
+
+## Uso
+
+La interfaz principal es:
+
+```bash
+python -m distance_routing <subcomando> [opciones]
+```
+
+Si el paquete está instalado, también puedes usar:
+
+```bash
+distance-routing <subcomando> [opciones]
+```
+
+### Subcomandos
+
+- `open-route`: ruta abierta mínima.
+- `closed-route`: ruta cerrada mínima.
+- `warehouse-median`: bodega óptima libre en 3D.
+- `warehouse-fixed`: bodega óptima con `y` fija.
+- `warehouse-mst`: bodega óptima por red compartida MST.
+- `warehouse-monotone`: bodega óptima por red dirigida monotónica en `y`.
+
+### Argumentos comunes
+
+- `--input`: archivo de entrada. Default `input/puntos.txt`.
+- `--output`: archivo de salida cuando aplica.
+- `--fixed-y`: default `-40.0` para algoritmos restringidos a un plano.
+
+### Ejemplos
+
+```bash
+python -m distance_routing open-route
+python -m distance_routing closed-route --start 0
+python -m distance_routing warehouse-median
+python -m distance_routing warehouse-fixed --fixed-y -40
+python -m distance_routing warehouse-mst --output output/red_mst.txt
+python -m distance_routing warehouse-monotone --fixed-y -40
+```
+
+## Formato de entrada
+
+El archivo de entrada debe contener una terna `x y z` por línea:
+
+```txt
+-287 2 -736
+-286 -4 -729
+-271 2 -714
+```
+
+Reglas:
+
+- se permiten enteros o decimales;
+- las líneas vacías se ignoran;
+- cada línea debe tener exactamente 3 valores;
+- los algoritmos de red deduplican puntos antes de optimizar.
+
+## Salidas por defecto
+
+- `open-route` escribe `output/ruta_abierta.txt`
+- `closed-route` escribe `output/ruta_cerrada.txt`
+- `warehouse-mst` escribe `output/solucion_bodega_mst.txt`
+- `warehouse-monotone` escribe `output/solucion_bodega_monotona_y.txt`
+- `warehouse-median` y `warehouse-fixed` imprimen por consola y sólo escriben archivo si se pasa `--output`
+
+La carpeta `output/` se considera runtime y no forma parte de los datos fuente del proyecto.
+
+## Uso como librería
+
+Los algoritmos principales están separados por responsabilidad:
+
+- [routing.py](/Users/franciscoerrandonea/code/distance_routing/src/distance_routing/routing.py): rutas exactas abiertas y cerradas.
+- [warehouse.py](/Users/franciscoerrandonea/code/distance_routing/src/distance_routing/warehouse.py): ubicación de bodegas y redes compartidas.
+- [geometry.py](/Users/franciscoerrandonea/code/distance_routing/src/distance_routing/geometry.py): distancia Manhattan y deduplicación.
+- [io_utils.py](/Users/franciscoerrandonea/code/distance_routing/src/distance_routing/io_utils.py): lectura de puntos y escritura de reportes.
+- [types.py](/Users/franciscoerrandonea/code/distance_routing/src/distance_routing/types.py): dataclasses y tipos compartidos.
+
+Esto permite usar la lógica desde otros scripts sin depender de la CLI.
+
+## Desarrollo
+
+Ejecutar tests:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+Ver ayuda de la CLI:
+
+```bash
+python -m distance_routing --help
+```
+
+## Compatibilidad
+
+Los scripts históricos en la raíz siguen disponibles:
+
+- `min_distance.py`
+- `opt_taxicab_storage.py`
+- `opt_taxicab_high_fixed.py`
+- `opt_taxicab_w_cost.py`
+- `opt_taxicab_high_gravity.py`
+
+Esos archivos ahora son wrappers delgados que delegan a la CLI nueva.
