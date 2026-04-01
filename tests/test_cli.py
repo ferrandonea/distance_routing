@@ -9,7 +9,7 @@ from distance_routing import cli
 
 
 class CliTests(unittest.TestCase):
-    """Cobertura de la CLI principal con defaults y opciones explícitas."""
+    """Cobertura de la CLI principal con defaults y opciones explicitas."""
 
     def test_open_route_uses_explicit_paths(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -25,7 +25,7 @@ class CliTests(unittest.TestCase):
                 )
 
             self.assertEqual(exit_code, 0)
-            self.assertIn("Ruta abierta mínima", stdout.getvalue())
+            self.assertIn("Ruta abierta minima", stdout.getvalue())
             self.assertTrue(output_path.exists())
 
     def test_defaults_can_be_monkeypatched(self) -> None:
@@ -83,11 +83,40 @@ class CliTests(unittest.TestCase):
                 )
 
             self.assertEqual(exit_code, 0)
-            self.assertIn("Ruta abierta mínima", stdout.getvalue())
+            self.assertIn("Ruta abierta minima", stdout.getvalue())
             self.assertTrue((output_dir / "ruta_abierta.txt").exists())
             self.assertTrue((output_dir / "ruta_cerrada.txt").exists())
             self.assertTrue((output_dir / "solucion_bodega_mst.txt").exists())
             self.assertTrue((output_dir / "solucion_bodega_monotona_y.txt").exists())
+
+    def test_warehouse_monotone_can_generate_plot(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_path = Path(tmp_dir)
+            input_path = tmp_path / "puntos.txt"
+            output_path = tmp_path / "monotone.txt"
+            plot_path = tmp_path / "monotone.png"
+            input_path.write_text("0 1 0\n2 2 0\n", encoding="utf-8")
+
+            stdout = StringIO()
+            with redirect_stdout(stdout):
+                exit_code = cli.main(
+                    [
+                        "warehouse-monotone",
+                        "--input",
+                        str(input_path),
+                        "--fixed-y",
+                        "0",
+                        "--output",
+                        str(output_path),
+                        "--plot",
+                        str(plot_path),
+                    ]
+                )
+
+            self.assertEqual(exit_code, 0)
+            self.assertIn("Visualizacion 3D guardada en", stdout.getvalue())
+            self.assertTrue(output_path.exists())
+            self.assertTrue(plot_path.exists())
 
 
 if __name__ == "__main__":
